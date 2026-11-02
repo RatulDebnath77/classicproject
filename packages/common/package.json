@@ -1,0 +1,16 @@
+{
+  "name": "@commonproject/common",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "oxlint . --fix",
+    "format": "oxfmt src/"
+  },
+  "dependencies": {}
+}
