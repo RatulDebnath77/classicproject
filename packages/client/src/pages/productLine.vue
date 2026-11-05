@@ -41,10 +41,9 @@ async function updateProductLines() {
 </script>
 
 <template>
-  <h2>Product Lines</h2>
   <nav style="display: flex; justify-content: space-between">
     <RouterLink
-      v-for="productLine in productLines"
+      v-for="productLine of productLines"
       :key="productLine.productLine"
       :to="{
         name: '/productLine/[productLine]',
@@ -66,7 +65,12 @@ async function updateProductLines() {
       </button>
       <button v-else @click="adding = false" type="button">Close</button>
     </div>
-    <button :disabled="loading" @click="updateProductLines" type="button" style="margin-left: 5px">
+    <button
+      :disabled="loading"
+      @click="updateProductLines"
+      type="button"
+      style="margin-left: 0.5rem"
+    >
       Refresh
     </button>
   </nav>

@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
-import type { FullProduct } from '@commonproject/common'
+import { ref, watchEffect } from 'vue'
+import { formatPercent, formatUSD, type FullProduct } from '@commonproject/common'
 import { getProduct } from '@/api.ts'
+import ProductCard from '@/components/ProductCard.vue'
 
 definePage({ props: true })
 
@@ -13,19 +14,17 @@ const props = defineProps<Props>()
 const loading = ref(true)
 const product = ref<FullProduct>()
 
-watch(
-  () => props.productCode,
-  async () => {
-    loading.value = false
+async function updateProduct() {
+  loading.value = false
 
-    try {
-      product.value = await getProduct(props.productCode)
-    } finally {
-      loading.value = false
-    }
-  },
-  { immediate: true },
-)
+  try {
+    product.value = await getProduct(props.productCode)
+  } finally {
+    loading.value = false
+  }
+}
+
+watchEffect(updateProduct)
 </script>
 
 <template>
@@ -37,26 +36,37 @@ watch(
       style="margin-left: auto"
       >{{ product.productLine }}</RouterLink
     >
+    <button :disabled="loading" style="margin: 0 0.5rem" type="button">Update</button>
+    <button :disabled="loading" type="button" @click="updateProduct">Refresh</button>
   </nav>
   <main>
     <div v-if="loading">Loading {{ props.productCode }}...</div>
     <div v-else>
       <div v-if="product">
         <p>Name: {{ product.productName }}</p>
-        <p>Quantity: {{ product.quantityInStock }}</p>
-        <br />
-        <p>Buying Price: ${{ product.buyPrice }}</p>
-        <p>Selling Price: ${{ product.MSRP }}</p>
+        <p>
+          Quantity: {{ product.quantityInStock.toLocaleString() }}
+          <button style="margin: 0.5rem" type="button">-</button><button type="button">+</button>
+        </p>
         <br />
         <p>
-          Markup:
-          {{ (((product.MSRP - product.buyPrice) / product.buyPrice) * 100).toFixed(2) }}%
+          Buying Price:
+          {{ formatUSD(product.buyPrice) }}
         </p>
         <p>
-          Estimated Profit: ${{
-            ((product.MSRP - product.buyPrice) * product.quantityInStock).toFixed(2)
-          }}
+          Selling Price:
+          {{ formatUSD(product.MSRP) }}
         </p>
+        <br />
+        <p>
+          Markup Percentage:
+          {{ formatPercent((product.MSRP - product.buyPrice) / product.buyPrice) }}
+        </p>
+        <p>
+          Estimated Profit:
+          {{ formatUSD((product.MSRP - product.buyPrice) * product.quantityInStock) }}
+        </p>
+        <ProductCard :product="product" />
       </div>
     </div>
   </main>

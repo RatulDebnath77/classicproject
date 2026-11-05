@@ -20,7 +20,7 @@ const apiStateColor = computed(() => {
     case APIState.Healthy:
       return 'green'
     default:
-      return 'white'
+      return 'orange'
   }
 })
 
@@ -51,16 +51,15 @@ async function computeAPIState() {
 </script>
 
 <template>
-  <div style="display: flex; justify-content: space-between">
-    <p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
-    <p :style="{ backgroundColor: apiStateColor }">
-      <strong>API Server:</strong> {{ APIState[apiState] }}
-    </p>
-  </div>
-  <nav>
+  <nav style="display: flex; justify-content: space-between">
     <RouterLink :to="{ name: '/' }">Home</RouterLink>
-    <RouterLink :to="{ name: '/about' }">About</RouterLink>
+    <RouterLink :to="{ name: '/employeeTree' }">Employee Tree</RouterLink>
+    <RouterLink :to="{ name: '/employees' }">Sales Reps</RouterLink>
     <RouterLink :to="{ name: '/productLine' }">Product Lines</RouterLink>
+    <div style="display: flex; margin-left: auto">
+      <div style="font-weight: bold">API Server:&nbsp;</div>
+      <div :style="{ backgroundColor: apiStateColor }">{{ APIState[apiState] }}</div>
+    </div>
   </nav>
   <main>
     <RouterView />

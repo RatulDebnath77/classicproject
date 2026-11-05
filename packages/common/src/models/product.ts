@@ -3,5 +3,12 @@ export interface Product {
   productName: string;
   productDescription: string;
   quantityInStock: number;
+  productLine: string;
+  productVendor: string;
+}
+
+export interface FullProduct extends Product {
+  productScale: string;
+  buyPrice: number;
   MSRP: number;
 }

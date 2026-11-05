@@ -1,8 +1,18 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { tx } from "./db.ts";
-import type { FullProductRow, OfficeRow, ProductLineRow, ProductRow, TestRow } from "./row.ts";
-import { coerceInt } from "@commonproject/common";
+import type {
+  CustomerRow,
+  EmployeeMinRow,
+  EmployeeRow,
+  FullProductRow,
+  OfficeRow,
+  ProductLineRow,
+  ProductRow,
+  ProductSoldRow,
+  TestRow,
+} from "./row.ts";
+import { coerceInt, type EmployeeNode, findReportsTo } from "@commonproject/common";
 import { type ResultSetHeader } from "mysql2";
 
 const port = 3000;
@@ -89,11 +99,11 @@ app.get("/products{/:productLine}", (req: Request, res: Response) => {
       break;
   }
   const page = coerceInt(req.query.page, 1, 1, 20);
-  const size = coerceInt(req.query.size, 10, 1, 20);
+  const size = coerceInt(req.query.size, 18, 1, 20);
 
   return tx(async (conn) => {
     const [result] = await conn.execute<ProductRow[]>(
-      `SELECT productCode, productName, productDescription, quantityInStock, MSRP FROM products WHERE (? IS NULL OR productLine = ?) ${sort} LIMIT ? OFFSET ?`,
+      `SELECT productCode, productName, productLine, productDescription, productVendor, quantityInStock FROM products WHERE (? IS NULL OR productLine = ?) ${sort} LIMIT ? OFFSET ?`,
       [productLine, productLine, size, (page - 1) * size],
     );
     res.json(result);
@@ -111,6 +121,76 @@ app.get("/product/:productCode", (req: Request, res: Response) => {
     } else {
       res.sendStatus(404);
     }
+  });
+});
+
+app.get("/product-sold/:productCode", (req: Request, res: Response) => {
+  let day = coerceInt(req.query.day, 30, 1, 60);
+  day *= 1000;
+
+  return tx(async (conn) => {
+    const [result] = await conn.execute<ProductSoldRow[]>(
+      `
+            SELECT COALESCE(COUNT(1), 0) AS reviewCount,
+            COALESCE(SUM(od.quantityOrdered), 0) AS productSold,
+            COALESCE(MIN(od.priceEach), 0) AS lowestPrice
+            FROM orderdetails od JOIN orders o ON od.orderNumber = o.orderNumber
+            WHERE od.productCode = ? AND o.orderDate > CURRENT_DATE() - INTERVAL ? DAY
+        `,
+      [req.params.productCode, day],
+    );
+    res.json(result[0]);
+  });
+});
+
+app.get("/sales-reps", (req: Request, res: Response) => {
+  return tx(async (conn) => {
+    const [result] = await conn.execute<EmployeeRow[]>(
+      `
+            SELECT e.employeeNumber, CONCAT(e.firstName, ' ', e.lastName) AS employeeName, e.email,
+                   o.city AS officeCity, o.country AS officeCountry, COALESCE(SUM(c.creditLimit), 0) AS totalCreditLimit
+            FROM employees e JOIN offices o ON e.officeCode = o.officeCode JOIN customers c ON e.employeeNumber = c.salesRepEmployeeNumber
+            WHERE e.jobTitle = 'Sales Rep'
+            GROUP BY e.employeeNumber, e.firstName, e.lastName, e.email, e.jobTitle`,
+    );
+    res.json(result);
+  });
+});
+
+app.get("/employees", (req: Request, res: Response) => {
+  return tx(async (conn) => {
+    const [result] = await conn.execute<EmployeeMinRow[]>(
+      `SELECT employeeNumber, CONCAT(firstName, ' ', lastName) AS employeeName, reportsTo FROM employees`,
+    );
+
+    const employees: EmployeeNode[] = [];
+    while (result.length) {
+      for (const employee of result) {
+        const found = employee.reportsTo
+          ? findReportsTo(employee, employees)
+          : { id: 0, name: "", employees };
+        if (found) {
+          found.employees.push({
+            id: employee.employeeNumber,
+            name: employee.employeeName,
+            employees: [],
+          });
+          result.splice(result.indexOf(employee), 1);
+          break;
+        }
+      }
+    }
+    res.json(employees);
+  });
+});
+
+app.get("/customers/:employeeNumber", (req: Request, res: Response) => {
+  return tx(async (conn) => {
+    const [result] = await conn.execute<CustomerRow[]>(
+      `SELECT customerNumber, customerName, phone, city, country FROM customers WHERE salesRepEmployeeNumber = ?`,
+      [req.params.employeeNumber],
+    );
+    res.json(result);
   });
 });
 

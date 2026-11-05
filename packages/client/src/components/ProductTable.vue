@@ -3,6 +3,7 @@ import { deleteProductLine, getProducts } from '@/api.ts'
 import { computed, ref, watchEffect } from 'vue'
 import type { Product } from '@commonproject/common'
 import { useRouter } from 'vue-router'
+import ProductBox from '@/components/ProductBox.vue'
 
 interface Props {
   productLine?: string
@@ -78,12 +79,21 @@ async function onDelete() {
   }
 }
 
+async function onLink(event: Event) {
+  const link = event.currentTarget as HTMLInputElement
+  if (event.type == 'mouseenter') {
+    link.style.scale = '1.05'
+  } else if (event.type == 'mouseleave') {
+    link.style.scale = '1'
+  }
+}
+
 watchEffect(updateProducts)
 </script>
 
 <template>
-  <h2 v-if="props.productLine">{{ props.productLine }}</h2>
   <nav style="display: flex; justify-content: space-between; align-items: center">
+    <div style="font-weight: bold">{{ props.productLine ?? 'All Products' }}</div>
     <button
       :disabled="loading || page === 1"
       style="margin-left: auto"
@@ -92,34 +102,47 @@ watchEffect(updateProducts)
     >
       &lt; Prev
     </button>
-    <p style="margin: 0 5px">{{ page }}</p>
+    <p style="margin: 0 0.5rem">{{ page }}</p>
     <button :disabled="loading" type="button" @click="page += 1">Next ></button>
-    <button :disabled="loading || !props.productLine" style="margin-left: 5px" @click="onDelete">
+    <button :disabled="loading || !props.productLine" style="margin-left: 0.5rem" @click="onDelete">
       Delete
     </button>
-    <button :disabled="loading" style="margin-left: 5px" type="button" @click="updateProducts">
+    <button :disabled="loading" style="margin-left: 0.5rem" type="button" @click="updateProducts">
       Refresh
     </button>
   </nav>
   <main>
-    <div style="display: flex; justify-content: space-between; margin: 20px">
-      <div>Product</div>
-      <div>
-        Stock <button @click="onSort" type="button">{{ sortStockSymbol }}</button>
-      </div>
-    </div>
-    <hr />
-    <div
-      v-for="product in products"
-      :key="product.productCode"
-      style="display: flex; justify-content: space-between; margin: 20px"
-    >
+    <!--    <div style="display: flex; justify-content: space-between; margin: 20px">-->
+    <!--      <div>Product</div>-->
+    <!--      <div>-->
+    <!--        Stock <button @click="onSort" type="button">{{ sortStockSymbol }}</button>-->
+    <!--      </div>-->
+    <!--    </div>-->
+    <!--    <hr />-->
+    <!--    <div-->
+    <!--      v-for="product of products"-->
+    <!--      :key="product.productCode"-->
+    <!--      style="display: flex; justify-content: space-between; margin: 20px"-->
+    <!--    >-->
+    <!--      <RouterLink-->
+    <!--        :to="{ name: '/product/[productCode]', params: { productCode: product.productCode } }"-->
+    <!--        :title="product.productDescription"-->
+    <!--        >{{ product.productName }}</RouterLink-->
+    <!--      >-->
+    <!--      <div>{{ product.quantityInStock.toLocaleString() }}</div>-->
+    <!--    </div>-->
+    <div style="display: flex; flex-flow: row wrap; gap: 0.5rem; justify-content: start">
       <RouterLink
-        :to="{ name: '/product/[productCode]', params: { productCode: product.productCode } }"
+        v-for="product of products"
+        :key="product.productCode"
         :title="product.productDescription"
-        >{{ product.productName }}</RouterLink
+        :to="{ name: '/product/[productCode]', params: { productCode: product.productCode } }"
+        style="margin: 0.25rem; text-decoration: none; transition-duration: 150ms"
+        @mouseenter="onLink"
+        @mouseleave="onLink"
       >
-      <div>{{ product.quantityInStock }}</div>
+        <ProductBox :product="product"></ProductBox>
+      </RouterLink>
     </div>
   </main>
 </template>

@@ -1,5 +1,9 @@
 export { type Office } from "./office.ts";
 export { type ProductLine } from "./product-line.ts";
 export { type Health } from "./health.ts";
-export { type Product } from "./product.ts";
-export { type FullProduct } from "./full-product.ts";
+export type { Product, FullProduct } from "./product.ts";
+export { type Customer } from "./customer.ts";
+export { type Order } from "./order.ts";
+export { type ProductSold } from "./product-sold.ts";
+export type { EmployeeMin, Employee } from "./employee.ts";
+export { type EmployeeNode } from "./employee-node.ts";

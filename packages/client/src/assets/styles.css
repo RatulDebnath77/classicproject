@@ -1,8 +1,10 @@
 nav,
 main {
-  border: 2px solid #000;
+  border: 2px solid gray;
   margin-bottom: 10px;
   padding: 10px;
+  border-radius: 0.5rem;
+  box-shadow: 0.25rem 0.25rem 0.25rem darkgray;
 }
 
 nav > a + a {

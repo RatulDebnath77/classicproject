@@ -38,9 +38,23 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/about': RouteRecordInfo<
-      '/about',
-      '/about',
+    '/employee/[employeeNumber]': RouteRecordInfo<
+      '/employee/[employeeNumber]',
+      '/employee/:employeeNumber',
+      { employeeNumber: ParamValue<true> },
+      { employeeNumber: ParamValue<false> },
+      | never
+    >,
+    '/employees': RouteRecordInfo<
+      '/employees',
+      '/employees',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/employeeTree': RouteRecordInfo<
+      '/employeeTree',
+      '/employeeTree',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -87,9 +101,25 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/about.vue': {
+    'src/pages/employee/[employeeNumber].vue': {
       routes:
-        | '/about'
+        | '/employee/[employeeNumber]'
+      views:
+        | never
+      pathParamNames:
+        | 'employeeNumber'
+    }
+    'src/pages/employees.vue': {
+      routes:
+        | '/employees'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/employeeTree.vue': {
+      routes:
+        | '/employeeTree'
       views:
         | never
       pathParamNames:
