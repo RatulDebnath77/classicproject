@@ -29,14 +29,27 @@ export function formatPercent(number: string | number) {
   return Number(number).toLocaleString(undefined, { style: "percent" });
 }
 
-export function formatCurrency(number: string | number, currency: string, compact: boolean) {
-  const options: Intl.NumberFormatOptions = { style: "currency", currency };
+export function formatCurrency(
+  number: string | number,
+  currency: string,
+  compact: boolean,
+  signDisplay: Intl.NumberFormatOptionsSignDisplay,
+) {
+  const options: Intl.NumberFormatOptions = { style: "currency", currency, signDisplay };
   if (compact) {
     options.notation = "compact";
   }
   return Number(number).toLocaleString(undefined, options);
 }
 
-export function formatUSD(number: number, compact: boolean = false) {
-  return formatCurrency(number, "USD", compact);
+export function formatUSD(
+  number: number,
+  compact: boolean = false,
+  signDisplay: Intl.NumberFormatOptionsSignDisplay = "auto",
+) {
+  return formatCurrency(number, "USD", compact, signDisplay);
+}
+
+export function formatDate(date: string | Date) {
+  return new Date(date).toLocaleDateString();
 }

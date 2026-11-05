@@ -7,3 +7,4 @@ export { type Order } from "./order.ts";
 export { type ProductSold } from "./product-sold.ts";
 export type { EmployeeMin, Employee } from "./employee.ts";
 export { type EmployeeNode } from "./employee-node.ts";
+export { type History } from "./history.ts";

@@ -7,6 +7,8 @@ import type {
   Customer,
   Employee,
   EmployeeNode,
+  Order,
+  History,
 } from '@commonproject/common'
 
 const API_URL = import.meta.env.API_URL ?? 'http://localhost:3000'
@@ -72,5 +74,15 @@ export async function getSalesReps(): Promise<Employee[]> {
 
 export async function getEmployees(): Promise<EmployeeNode[]> {
   const res = await fetch(`${API_URL}/employees`)
+  return await res.json()
+}
+
+export async function getHistory(customerNumber: string): Promise<History[]> {
+  const res = await fetch(`${API_URL}/history/${customerNumber}`)
+  return await res.json()
+}
+
+export async function getOrders(customerNumber: string): Promise<Order[]> {
+  const res = await fetch(`${API_URL}/orders/${customerNumber}`)
   return await res.json()
 }

@@ -46,7 +46,9 @@ watchEffect(updateProduct)
         <p>Name: {{ product.productName }}</p>
         <p>
           Quantity: {{ product.quantityInStock.toLocaleString() }}
-          <button style="margin: 0.5rem" type="button">-</button><button type="button">+</button>
+          <button style="margin: 0.5rem" type="button" @click="product.quantityInStock -= 1">
+            -</button
+          ><button type="button" @click="product.quantityInStock += 1">+</button>
         </p>
         <br />
         <p>

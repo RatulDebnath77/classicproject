@@ -25,9 +25,11 @@ const props = defineProps<Props>()
     "
   >
     <div style="display: flex; align-items: center; height: fit-content">
-      <div style="border: 0.1rem dashed darkgrey; width: 4rem; height: 4rem; border-radius: 2rem">
-        profile image
-      </div>
+      <img
+        :src="`https://picsum.photos/64?employeeName=${employee.employeeName}`"
+        :alt="`Profile picture of ${employee.employeeName}`"
+        style="border: 0.1rem dashed darkgrey; width: 4rem; height: 4rem; border-radius: 2rem"
+      />
       <div style="display: flex; flex-direction: column; margin-left: 1rem">
         <div style="font-weight: bold; font-size: larger; color: darkolivegreen">
           {{ employee.employeeName }}

@@ -2,11 +2,13 @@ import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { tx } from "./db.ts";
 import type {
+  HistoryRow,
   CustomerRow,
   EmployeeMinRow,
   EmployeeRow,
   FullProductRow,
   OfficeRow,
+  OrderRow,
   ProductLineRow,
   ProductRow,
   ProductSoldRow,
@@ -99,7 +101,7 @@ app.get("/products{/:productLine}", (req: Request, res: Response) => {
       break;
   }
   const page = coerceInt(req.query.page, 1, 1, 20);
-  const size = coerceInt(req.query.size, 18, 1, 20);
+  const size = coerceInt(req.query.size, 20, 1, 20);
 
   return tx(async (conn) => {
     const [result] = await conn.execute<ProductRow[]>(
@@ -143,7 +145,7 @@ app.get("/product-sold/:productCode", (req: Request, res: Response) => {
   });
 });
 
-app.get("/sales-reps", (req: Request, res: Response) => {
+app.get("/sales-reps", (_req: Request, res: Response) => {
   return tx(async (conn) => {
     const [result] = await conn.execute<EmployeeRow[]>(
       `
@@ -157,7 +159,7 @@ app.get("/sales-reps", (req: Request, res: Response) => {
   });
 });
 
-app.get("/employees", (req: Request, res: Response) => {
+app.get("/employees", (_req: Request, res: Response) => {
   return tx(async (conn) => {
     const [result] = await conn.execute<EmployeeMinRow[]>(
       `SELECT employeeNumber, CONCAT(firstName, ' ', lastName) AS employeeName, reportsTo FROM employees`,
@@ -187,8 +189,45 @@ app.get("/employees", (req: Request, res: Response) => {
 app.get("/customers/:employeeNumber", (req: Request, res: Response) => {
   return tx(async (conn) => {
     const [result] = await conn.execute<CustomerRow[]>(
-      `SELECT customerNumber, customerName, phone, city, country FROM customers WHERE salesRepEmployeeNumber = ?`,
+      `
+            SELECT customerNumber, customerName, CONCAT(contactFirstName, ' ', contactLastName) AS contactName, phone, city, state, country, creditLimit
+            FROM customers WHERE salesRepEmployeeNumber = ?
+          `,
       [req.params.employeeNumber],
+    );
+    res.json(result);
+  });
+});
+
+app.get("/orders/:customerNumber", (req: Request, res: Response) => {
+  return tx(async (conn) => {
+    const [result] = await conn.execute<OrderRow[]>(
+      `
+          SELECT o.orderNumber, o.orderDate, o.requiredDate, o.shippedDate, o.status, o.comments,
+                 od.quantityOrdered, od.priceEach, od.productCode,
+                 p.productName, p.productLine, p.MSRP
+          FROM orders o
+            JOIN orderdetails od ON o.orderNumber = od.orderNumber
+            JOIN products p ON od.productCode = p.productCode
+          WHERE customerNumber = ?
+        `,
+      [req.params.customerNumber],
+    );
+    res.json(result);
+  });
+});
+
+app.get("/history/:customerNumber", (req: Request, res: Response) => {
+  return tx(async (conn) => {
+    const [result] = await conn.execute<HistoryRow[]>(
+      `
+        SELECT checkNumber AS id, 'credit' AS type, amount, paymentDate AS date FROM payments WHERE customerNumber = ?
+        UNION ALL
+        SELECT o.orderNumber AS id, 'debit' AS type, od.quantityOrdered * od.priceEach AS amount, o.orderDate AS date FROM orders o
+          JOIN orderdetails od ON o.orderNumber = od.orderNumber WHERE o.customerNumber = ?
+        ORDER BY date DESC
+      `,
+      [req.params.customerNumber, req.params.customerNumber],
     );
     res.json(result);
   });

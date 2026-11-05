@@ -52,13 +52,18 @@ async function computeAPIState() {
 
 <template>
   <nav style="display: flex; justify-content: space-between">
-    <RouterLink :to="{ name: '/' }">Home</RouterLink>
+    <RouterLink :to="{ name: '/' }" style="font-weight: bold">Home</RouterLink>
     <RouterLink :to="{ name: '/employeeTree' }">Employee Tree</RouterLink>
     <RouterLink :to="{ name: '/employees' }">Sales Reps</RouterLink>
     <RouterLink :to="{ name: '/productLine' }">Product Lines</RouterLink>
     <div style="display: flex; margin-left: auto">
       <div style="font-weight: bold">API Server:&nbsp;</div>
-      <div :style="{ backgroundColor: apiStateColor }">{{ APIState[apiState] }}</div>
+      <div
+        style="border-radius: 0.5rem; padding: 0 0.25rem"
+        :style="{ backgroundColor: `color-mix(in srgb, ${apiStateColor} 66%, transparent)` }"
+      >
+        {{ APIState[apiState] }}
+      </div>
     </div>
   </nav>
   <main>
